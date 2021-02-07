@@ -1,2 +1,2 @@
 # IubhUpMonitor
-Monitoring for the IUBH Pages to see if they are available.
+Monitoring for the IUBH pages to see if they are available.
