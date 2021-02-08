@@ -11,7 +11,7 @@ def create_json(website, readable=False):
         "name": website.name,
         "url": website.url
     })
-    filename = "monitor/" + website.name + ".json"
+    filename = website.name + ".json"
     for uptime in website.availability:
         data["availability"].append({uptime[0]: uptime[1]})
     with open(filename, "w") as file:
@@ -19,7 +19,6 @@ def create_json(website, readable=False):
             json.dump(data, file, indent=4)
         else:
             json.dump(data, file)
-    print("Created file successfully")
 
 
 # read a given json file and return a website object
