@@ -4,18 +4,21 @@ import monitor
 import json
 
 
-
 # create a json file from a given website and (for now) save it locally
-def create_json(website):
+def create_json(website, readable=False):
     data = {"website": [], "availability": []}
     data["website"].append({
         "name": website.name,
         "url": website.url
     })
+    filename = "monitor/" + website.name + ".json"
     for uptime in website.availability:
         data["availability"].append({uptime[0]: uptime[1]})
-    with open("monitor/data.json", "w") as file:
-        json.dump(data, file, indent=4)
+    with open(filename, "w") as file:
+        if readable:
+            json.dump(data, file, indent=4)
+        else:
+            json.dump(data, file)
     print("Created file successfully")
 
 
