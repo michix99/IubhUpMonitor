@@ -27,6 +27,8 @@ def load_existing_data(website):
     try:
         with open(site.name + ".json", "r") as file:
             site.availability = monitor.read_json(file).availability
+            if not site.validate_data():
+                print("Error in data of " + site.name)
             print("Loaded existing data for " + site.name)
     except FileNotFoundError:
         print("Could not find existing data for " + site.name)
@@ -42,13 +44,18 @@ def load_existing_data(website):
 
 def check_availability(website, save=True, log=True):
     status_code = "-999"
+    latency = 0
+    if log:
+        print(website.name + ": ", end="")
     try:
+        latency = time.time() * 1000
         request = requests.get(website.url, timeout=30)
+        latency = int(time.time() * 1000 - latency)
         status_code = str(request.status_code)
     except requests.exceptions.RequestException:
         pass
     if log:
-        print(website.name + " Status: " + status_code + "; ", end="\t")
+        print(status_code + "(" + str(latency) + "ms); ", end="\t")
     if save:
         up = 1 if status_code == "200" else 0
         website.availability.append((int(time.time()), up))
@@ -81,8 +88,8 @@ log_interval = 15  # How often does a big status get printed
 log_timer = 0  # Just counting
 for site in websites:
     load_existing_data(site)
+print("\nStarting Monitoring")
 while True:
-    print("CHECKING: ")
     if are_we_online():
         for site in websites:
             check_availability(site, log=True)
