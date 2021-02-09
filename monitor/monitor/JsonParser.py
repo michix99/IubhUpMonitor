@@ -35,5 +35,4 @@ def read_json(json_file):
     except KeyError:
         print("ERROR: Could not find key in json_file")
         return
-    print("Loaded file successfully")
     return site
