@@ -25,13 +25,13 @@ def are_we_online():
 # Check if we already have data and if so append it to our new objects
 def load_existing_data(website):
     try:
-        with open(site.name + ".json", "r") as file:
-            site.availability = monitor.read_json(file).availability
-            if not site.validate_data():
-                print("Error in data of " + site.name)
-            print("Loaded existing data for " + site.name)
+        with open(website.name + ".json", "r") as file:
+            website.availability = monitor.read_json(file).availability
+            if not website.validate_data():
+                print("Error in data of " + website.name)
+            print("Loaded existing data for " + website.name)
     except FileNotFoundError:
-        print("Could not find existing data for " + site.name)
+        print("Could not find existing data for " + website.name)
 
 
 # Check if website is available and returns status as string
@@ -41,10 +41,9 @@ def load_existing_data(website):
 #   Possible return values:
 #   -HTML Status code (200 = Okay, 503 = Service Unavailable etc.)
 #   -"-999" in case of potential timeouts or other request errors
-
 def check_availability(website, save=True, log=True):
     status_code = "-999"
-    latency = 0
+    latency = -999
     if log:
         print(website.name + ": ", end="")
     try:
@@ -72,8 +71,11 @@ def print_big_status():
         avg_up = 0
         for d in status_site.availability:
             avg_up += d[1]
-        avg_up /= len(status_site.availability)
-        print("Average availability of " + status_site.name + ":\t" + str("%.3f" % avg_up) + " (Data size: " +
+        if len(status_site.availability) > 0:
+            status_text = str("%.3f" % (avg_up / len(status_site.availability)))
+        else:
+            status_text = "\tNO DATA AVAILABLE"
+        print("Average availability of " + status_site.name + ":\t" + status_text + " (Data size: " +
               str(len(status_site.availability)) + ")")
     print("===========================================================================")
 
