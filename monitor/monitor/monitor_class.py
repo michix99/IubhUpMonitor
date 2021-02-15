@@ -25,6 +25,7 @@ class Monitor:
         self.small_logs = True  # Use settings.csv to edit, this is just a default
         self.load_settings()
 
+    # load settings from disc
     def load_settings(self):
         filepath = os.path.join(os.path.dirname(__file__), "config", "settings.csv")
         try:
