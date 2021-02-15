@@ -4,7 +4,11 @@ import os
 import monitor
 
 
-
+# Monitor class
+#
+# Upon starts, loads sites.csv (pages we want to monitor)
+# and sanity_checks.csv (pages we use to verify that we are online). Then used load_settings() to run and parse
+# our settings.csv which contains import parameters for the running of the monitor
 class Monitor:
     def __init__(self):
         print("Initializing Monitor")
@@ -40,6 +44,7 @@ class Monitor:
         except FileNotFoundError:
             print("settings.csv not found, loading default settings")
 
+    # Reads the local file at "path" and creates a list of website objects out of it
     @staticmethod
     def load_sites(path):
         site_list = []
@@ -57,7 +62,7 @@ class Monitor:
             print("File not found: " + path)
         return site_list
 
-    # Check if we already have data and if so append it to our new objects
+    # Check if we already have data on a website and if so append it to our new website object
     @staticmethod
     def load_existing_data(website, suffix=""):
         try:
@@ -65,13 +70,11 @@ class Monitor:
             filepath = os.path.join(os.path.dirname(__file__), "data", filename)
             with open(filepath, "r") as file:
                 website.availability = monitor.read_json(file).availability
-                if not website.validate_data():
-                    print("Error in data of " + website.name)
                 print("Loaded existing data for " + website.name)
         except FileNotFoundError:
             print("Could not find existing data for " + website.name)
 
-    # Check pages that are typically available to make sure the problem is not on our side
+    # Check pages that are typically available to make sure we are actually online
     def are_we_online(self):
         for check_site in self.online_checks:
             if self.check_availability(check_site, save=False, log=False) == "200":
@@ -84,9 +87,9 @@ class Monitor:
     #
     #   Possible return values:
     #   -HTML Status code (200 = Okay, 503 = Service Unavailable etc.)
-    #   -"-999" in case of potential timeouts or other request errors
+    #   -"999" in case of potential timeouts or other request errors
     def check_availability(self, website, save=True, log=True):
-        status_code = "-999"  # Pre initialize in case of timeout
+        status_code = "999"  # Pre initialize in case of timeout
         latency = -999  # Pre initialize in case of timeout
         log = log if self.small_logs else False  # check if settings prohibit logging
         if log:
@@ -98,9 +101,9 @@ class Monitor:
             status_code = str(request.status_code)
         except requests.exceptions.RequestException:
             pass
-        latency_string = str(latency) if status_code != "-999" else "-"
+        latency_string = str(latency) if status_code != "999" else "-"
         if log:
-            print(status_code + " (" + latency_string.rjust(4,"0") + "ms); ", end=" ", flush=True)
+            print(status_code + " (" + latency_string.rjust(4, "0") + "ms); ", end=" ", flush=True)
         if save:
             up = 1 if status_code == "200" else 0
             website.availability.append((int(time.time()), up))
@@ -120,7 +123,7 @@ class Monitor:
                 status_text = str("%.3f" % (avg_up / len(status_site.availability)))
             else:
                 status_text = "\tNO DATA AVAILABLE"
-            print("Average availability of " + status_site.name.ljust(10," ") + ":\t" + status_text + " (Data size: " +
+            print("Average availability of " + status_site.name.ljust(10, " ") + ":\t" + status_text + " (Data size: " +
                   str(len(status_site.availability)) + ")")
         print("===========================================================================")
 
@@ -146,6 +149,3 @@ class Monitor:
                 time.sleep(1)
                 timer += 1
             print("")
-
-
-
