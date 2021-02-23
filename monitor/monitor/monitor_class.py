@@ -120,17 +120,18 @@ class Monitor:
     def print_big_status(self):
         print("")
         print("===============================STATUS UPDATE===============================")
-        for status_site in self.websites:
+        for site in self.websites:
             avail_text = "\tNO DATA"
             lat_text = "\tNO DATA"
-            if status_site.availability:
-                avg_lat = int(statistics.mean([data[1] for data in status_site.latency]))
-                avg_up = statistics.mean([data[1] for data in status_site.availability])
-            if len(status_site.availability) > 0:
+            if site.availability:
+                avg_lat = int(statistics.mean([data[1] for data in site.latency]))
+                avg_up = statistics.mean([data[1] for data in site.availability])
+            if len(site.availability) > 0:
                 avail_text = str("%.2f" % avg_up)
-            if len(status_site.latency) > 0:
+            if len(site.latency) > 0:
                 lat_text = str("%.0f" % avg_lat)
-            print(f"{status_site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(status_site.availability)})")
+            print(
+                f"{site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(site.availability)})")
         print("===========================================================================")
 
     # Checks all the sites in websites for their availability until manually exited
