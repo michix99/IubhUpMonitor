@@ -9,7 +9,7 @@ import os
 # readable should only be True for debugging the json manually
 # The suffix will be appended to the json (for saving compressed files)
 def create_json(website, readable=False, suffix=""):
-    data = {"website": [], "availability": []}
+    data = {"website": [], "availability": [], "latency": []}
     data["website"].append({
         "name": website.name,
         "url": website.url
@@ -18,6 +18,8 @@ def create_json(website, readable=False, suffix=""):
     filepath = os.path.join(os.path.dirname(__file__), "data", filename)
     for uptime in website.availability:
         data["availability"].append({uptime[0]: uptime[1]})
+    for latency in website.latency:
+        data["latency"].append({latency[0]: latency[1]})
     with open(filepath, "w") as file:
         if readable:
             json.dump(data, file, indent=4)
@@ -33,6 +35,9 @@ def read_json(json_file):
         for d in data["availability"]:
             for key in d:
                 site.availability.append((key, d[key]))
+        for d in data["latency"]:
+            for key in d:
+                site.latency.append((key, d[key]))
     except json.decoder.JSONDecodeError:
         print("ERROR: Malformed json file")
         return
@@ -55,7 +60,7 @@ def plot_data(website, suffix=""):
 def compress_plot_save(websites):
     for site in websites:
         plot_data(site)
-        site.average_data(minutes=15)
+        site.availability = site.average_data(site.availability, minutes=15)
         monitor.create_json(site, readable=False, suffix="-averaged")
         plot_data(site, " Averaged")
         site.compress_data()

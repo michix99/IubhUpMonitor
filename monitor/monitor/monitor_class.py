@@ -2,6 +2,7 @@ import requests
 import time
 import os
 import monitor
+import statistics
 
 
 # Monitor class
@@ -70,7 +71,9 @@ class Monitor:
             filename = website.name + suffix + ".json"
             filepath = os.path.join(os.path.dirname(__file__), "data", filename)
             with open(filepath, "r") as file:
-                website.availability = monitor.read_json(file).availability
+                site = monitor.read_json(file)
+                website.availability = site.availability
+                website.latency = site.latency
                 print("Loaded existing data for " + website.name)
         except FileNotFoundError:
             print("Could not find existing data for " + website.name)
@@ -102,13 +105,14 @@ class Monitor:
             status_code = str(request.status_code)
         except requests.exceptions.RequestException:
             pass
-        latency_string = str(latency) if status_code != "999" else "-"
         if log:
-            print(status_code + " (" + latency_string.rjust(4, "0") + "ms); ", end=" ", flush=True)
+            print(status_code + f" ({latency}ms)", end="", flush=True)
         if save:
             up = 1 if status_code == "200" else 0
             website.availability.append((int(time.time()), up))
+            website.latency.append((int(time.time()), latency))
             monitor.create_json(website)
+            print(";", end=" ", flush=True)
         return status_code
 
     # Prints a big status update with the average
@@ -117,15 +121,16 @@ class Monitor:
         print("")
         print("===============================STATUS UPDATE===============================")
         for status_site in self.websites:
-            avg_up = 0
-            for d in status_site.availability:
-                avg_up += d[1]
+            avail_text = "\tNO DATA"
+            lat_text = "\tNO DATA"
+            if status_site.availability:
+                avg_lat = int(statistics.mean([data[1] for data in status_site.latency]))
+                avg_up = statistics.mean([data[1] for data in status_site.availability])
             if len(status_site.availability) > 0:
-                status_text = str("%.3f" % (avg_up / len(status_site.availability)))
-            else:
-                status_text = "\tNO DATA AVAILABLE"
-            print("Average availability of " + status_site.name.ljust(10, " ") + ":\t" + status_text + " (Data size: " +
-                  str(len(status_site.availability)) + ")")
+                avail_text = str("%.2f" % avg_up)
+            if len(status_site.latency) > 0:
+                lat_text = str("%.0f" % avg_lat)
+            print(f"{status_site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(status_site.availability)})")
         print("===========================================================================")
 
     # Checks all the sites in websites for their availability until manually exited
