@@ -49,9 +49,22 @@ def read_json(json_file):
 
 # Currently just used for debugging to verify we compress and average our data correctly
 def plot_data(website, suffix=""):
+    fig, ax1 = plt.subplots()
     x_data = [int(data[0]) for data in website.availability]
     y_data = [data[1] for data in website.availability]
-    plt.plot(x_data, y_data)
+    color = 'tab:orange'
+    ax1.set_xlabel('time (UTC)')
+    ax1.set_ylabel('availability', color=color)
+    ax1.plot(x_data, y_data, color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()
+    x_data = [int(data[0]) for data in website.latency]
+    y_data = [data[1] for data in website.latency]
+    color = 'tab:blue'
+    ax2.set_ylabel('latency', color=color)
+    ax2.plot(x_data, y_data, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
     plt.title(website.name + suffix + " Data Points :" + str(len(website.availability)))
     plt.show()
 
