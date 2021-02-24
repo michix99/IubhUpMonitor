@@ -128,11 +128,12 @@ class Monitor:
         for site in self.websites:
             avail_text = "\tNO DATA"
             lat_text = "\tNO DATA"
-            if site.availability and site.latency:
+            if site.latency:
                 avg_lat = int(statistics.mean([data[1] for data in site.latency]))
+                lat_text = str("%.0f" % avg_lat)
+            if site.availability:
                 avg_up = statistics.mean([data[1] for data in site.availability])
                 avail_text = str("%.2f" % avg_up)
-                lat_text = str("%.0f" % avg_lat)
             print(
                 f"{site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(site.availability)})")
         print("===========================================================================")
