@@ -19,16 +19,17 @@ class Monitor:
         self.websites = self.load_sites(filepath)
         for site in self.websites:
             self.load_existing_data(site)
-
-        self.sleep_time = 60  # Use settings.csv to edit, this is just a default
-        self.small_sleep = 1  # Use settings.csv to edit, this is just a default
-        self.log_interval = 15  # Use settings.csv to edit, this is just a default
-        self.small_logs = True  # Use settings.csv to edit, this is just a default
+        self.config={}
         self.load_settings()
 
     # load settings from disc
     def load_settings(self):
         filepath = os.path.join(os.path.dirname(__file__), "config", "settings.csv")
+        self.config["sleep_time"] = 60  # Use settings.csv to edit, this is just a default
+        self.config["small_sleep"] = 1  # Use settings.csv to edit, this is just a default
+        self.config["log_interval"] = 15  # Use settings.csv to edit, this is just a default
+        self.config["small_logs"] = True  # Use settings.csv to edit, this is just a default
+        self.config["max_timeout"] = 30  # Use settings.csv to edit, this is just a default
         try:
             with open(filepath) as file:
                 for line in file:
@@ -36,13 +37,15 @@ class Monitor:
                         attr = line.split(";")[0]
                         value = int(line.split(";")[1])
                         if attr == "sleep_time":
-                            self.sleep_time = value
+                            self.config["sleep_time"] = value
                         if attr == "small_sleep":
-                            self.small_sleep = value
+                            self.config["small_sleep"] = value
                         if attr == "log_interval":
-                            self.log_interval = value
+                            self.config["log_interval"] = value
                         if attr == "small_logs":
-                            self.small_logs = bool(value)
+                            self.config["small_logs"] = bool(value)
+                        if attr == "max_timeout":
+                            self.config["max_timeout"] = value
         except FileNotFoundError:
             print("settings.csv not found, loading default settings")
 
@@ -95,22 +98,24 @@ class Monitor:
     def check_availability(self, website, save=True, log=True):
         status_code = "999"  # Pre initialize in case of timeout
         latency = -999  # Pre initialize in case of timeout
-        log = log if self.small_logs else False  # check if settings prohibit logging
+        log = log if self.config["small_logs"] else False  # check if settings prohibit logging
         if log:
             print(website.name + ": ", end="", flush=True)
         try:
             latency = time.time() * 1000
-            request = requests.get(website.url, timeout=30)
+            request = requests.get(website.url, timeout=self.config["max_timeout"])
             latency = int(time.time() * 1000 - latency)
             status_code = str(request.status_code)
         except requests.exceptions.RequestException:
+            latency = -999
             pass
         if log:
             print(status_code + f" ({latency}ms)", end="", flush=True)
         if save:
             up = 1 if status_code == "200" else 0
             website.availability.append((int(time.time()), up))
-            website.latency.append((int(time.time()), latency))
+            if latency != -999:
+                website.latency.append((int(time.time()), latency))
             monitor.create_json(website)
             print(";", end=" ", flush=True)
         return status_code
@@ -140,18 +145,18 @@ class Monitor:
         print("Starting Monitoring")
         log_timer = 0  # Just counting
         while True:
-            if log_timer % self.log_interval == 0 and self.log_interval != -1:
+            if log_timer % self.config["log_interval"] == 0 and self.config["log_interval"] != -1:
                 self.print_big_status()
             log_timer += 1
             if self.are_we_online():
                 for site in self.websites:
                     self.check_availability(site, log=True)
-                    time.sleep(self.small_sleep)
+                    time.sleep(self.config["small_sleep"])
             else:
                 print("NO INTERNET CONNECTION AVAILABLE", end="", flush=True)
             timer = 0
-            while timer < self.sleep_time:
-                if self.small_logs:
+            while timer < self.config["sleep_time"]:
+                if self.config["small_logs"]:
                     print(".", end="", flush=True)  # Prints a dot every second while waiting
                 time.sleep(1)
                 timer += 1
