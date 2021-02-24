@@ -88,7 +88,7 @@ class Monitor:
                 return True
         return False
 
-    # Check if website is available and returns status as string
+    # Check if Website object is available and returns status as string
     #   save: Should the data be saved locally?
     #   log: Should the information be logged in the console? (Will not create linebreak until done)
     #
@@ -97,7 +97,6 @@ class Monitor:
     #   -"999" in case of potential timeouts or other request errors
     def check_availability(self, website, save=True, log=True):
         status_code = "999"  # Pre initialize in case of timeout
-        latency = -999  # Pre initialize in case of timeout
         log = log if self.config["small_logs"] else False  # check if settings prohibit logging
         if log:
             print(website.name + ": ", end="", flush=True)
@@ -128,12 +127,10 @@ class Monitor:
         for site in self.websites:
             avail_text = "\tNO DATA"
             lat_text = "\tNO DATA"
-            if site.availability:
+            if site.availability and site.latency:
                 avg_lat = int(statistics.mean([data[1] for data in site.latency]))
                 avg_up = statistics.mean([data[1] for data in site.availability])
-            if len(site.availability) > 0:
                 avail_text = str("%.2f" % avg_up)
-            if len(site.latency) > 0:
                 lat_text = str("%.0f" % avg_lat)
             print(
                 f"{site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(site.availability)})")
@@ -153,7 +150,7 @@ class Monitor:
                     self.check_availability(site, log=True)
                     time.sleep(self.config["small_sleep"])
             else:
-                print("NO INTERNET CONNECTION AVAILABLE", end="", flush=True)
+                print("NO INTERNET CONNECTION AVAILABLE", flush=True)
             timer = 0
             while timer < self.config["sleep_time"]:
                 if self.config["small_logs"]:
