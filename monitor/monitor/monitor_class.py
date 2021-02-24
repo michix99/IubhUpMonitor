@@ -99,7 +99,7 @@ class Monitor:
         status_code = "999"  # Pre initialize in case of timeout
         log = log if self.config["small_logs"] else False  # check if settings prohibit logging
         if log:
-            print(website.name + ": ", end="", flush=True)
+            print(f"{website.name} :", end="", flush=True)
         try:
             latency = time.time() * 1000
             request = requests.get(website.url, timeout=self.config["max_timeout"])
@@ -109,12 +109,13 @@ class Monitor:
             latency = -999
             pass
         if log:
-            print(status_code + f" ({latency}ms)", end="", flush=True)
+            print(status_code + f" ({latency:>5}ms)", end="", flush=True)
         if save:
             up = 1 if status_code == "200" else 0
-            website.availability.append((int(time.time()), up))
-            if latency != -999:
-                website.latency.append((int(time.time()), latency))
+            timestamp = int(time.time())
+            website.availability.append((timestamp, up))
+            if status_code == "200":
+                website.latency.append((timestamp, latency))
             monitor.create_json(website)
             print(";", end=" ", flush=True)
         return status_code
