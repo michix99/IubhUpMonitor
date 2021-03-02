@@ -7,7 +7,7 @@ import json
 import os
 
 
-# create a json file from a given website and (for now) save it locally
+# create a json file from a given website and save it locally
 # readable should only be True for debugging the json manually
 # The suffix will be appended to the json (for saving compressed files)
 def create_json(website, readable=False, suffix=""):
@@ -18,7 +18,7 @@ def create_json(website, readable=False, suffix=""):
     })
     filename = website.name + suffix + ".json"
     filepath = os.path.join(os.path.dirname(__file__), "data", filename)
-    zipped["data"] = website.get_zip()
+    zipped["data"] = get_zip(website.availability, website.latency)
     zipped["status"] = website.get_status()
     with open(filepath, "w") as file:
         if readable:
@@ -47,10 +47,10 @@ def read_json(json_file):
         zipped = json.load(json_file)
         site = monitor.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
         for utc in zipped["data"]:
-            if zipped["data"][utc][0] != "-1":
-                site.availability.append((utc, zipped["data"][utc][0]))
-            if zipped["data"][utc][1] != "-1":
-                site.latency.append((utc, zipped["data"][utc][1]))
+            if zipped["data"][utc][0] != -1:
+                site.availability.append((int(utc), zipped["data"][utc][0]))
+            if zipped["data"][utc][1] != -1:
+                site.latency.append((int(utc), zipped["data"][utc][1]))
 
     except json.decoder.JSONDecodeError:
         print("ERROR: Malformed json file")
@@ -61,7 +61,7 @@ def read_json(json_file):
     return site
 
 
-# Currently just used for debugging to verify we compress and average our data correctly
+# Used for debugging to verify we compress and average our data correctly
 def plot_data(website, suffix=""):
     fig, ax1 = plt.subplots()
     x_data = [(int(data[0]) - int(time.time())) / 60 for data in website.availability]
@@ -91,16 +91,47 @@ def get_past_utc(seconds):
     return int(time.time() - seconds)
 
 
+# Helper function to zip data in dictionaries
+def dic_insert(dic, utc, av, lat):
+    if utc in dic:
+        if dic[utc][0] == -1:
+            dic[utc] = (av, dic[utc][1])
+        if dic[utc][1] == -1:
+            dic[utc] = (dic[utc][0], lat)
+    else:
+        dic[utc] = (av, lat)
+
+
 # Availability and Latency will be compiled together as good as possible to reduce file size
 # If they share a UTC time code, wrap them together
 # Returns it as a dictionary ready for json saving
 def get_zip(availability, latency):
     data = {}
-    for av in availability:
-        data[av[0]] = (av[1], -1)
-    for lat in latency:
-        if lat[0] in data:
-            data[lat[0]] = (data[lat[0]][0], lat[1])
-        else:
-            data[lat[0]] = (-1, lat[1])
+    av_copy = availability[:]
+    lat_copy = latency[:]
+    av_item = None
+    lat_item = None
+    while len(av_copy) > 0 and len(lat_copy) > 0:
+        if not av_item and len(av_copy) > 0:
+            av_item = av_copy.pop(0)
+        if not lat_item and len(lat_copy) > 0:
+            lat_item = lat_copy.pop(0)
+        if av_item and lat_item:
+            if av_item[0] < lat_item[0]:
+                dic_insert(data, av_item[0], av_item[1], -1)
+                av_item = None
+            else:
+                dic_insert(data, lat_item[0], -1, lat_item[1])
+                lat_item = None
+    while len(av_copy) > 0 or av_item:
+        if not av_item:
+            av_item = av_copy.pop(0)
+        dic_insert(data, av_item[0], av_item[1], -1)
+        av_item = None
+    while len(lat_copy) > 0 or lat_item:
+        if not lat_item:
+            lat_item = lat_copy.pop(0)
+        dic_insert(data, lat_item[0], -1, lat_item[1])
+        lat_item = None
+
     return data
