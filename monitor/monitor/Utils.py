@@ -117,22 +117,24 @@ def plot_data(website, suffix=""):
     plt.show()
 
 
-# Used for debugging to compress, plot and save every website in a given list
-def compress_plot_save(websites):
-    for site in websites:
-        plot_data(site)
-        site.availability = site.average_data(site.availability, minutes=15)
-        site.latency = site.average_data(site.latency, minutes=15)
-        monitor.create_json(site, readable=False, suffix="-averaged")
-        plot_data(site, " Averaged")
-        site.compress_data()
-        monitor.create_json(site, readable=False, suffix="-averagedcompressed")
-        plot_data(site, " Averaged + Compressed")
-
-
 def get_seconds(seconds=0, minutes=0, hours=0, days=0):
     return seconds + minutes * 60 + hours * 3600 + days * 3600 * 24
 
 
 def get_past_utc(seconds):
     return int(time.time() - seconds)
+
+
+# Availability and Latency will be compiled together as good as possible to save on data
+# If they share a UTC time code, wrap them together
+# Returns it as a dictionary ready for json saving
+def get_zip(availability, latency):
+    data = {}
+    for av in availability:
+        data[av[0]] = (av[1], -1)
+    for lat in latency:
+        if lat[0] in data:
+            data[lat[0]] = (data[lat[0]][0], lat[1])
+        else:
+            data[lat[0]] = (-1, lat[1])
+    return data
