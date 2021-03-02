@@ -1,8 +1,14 @@
 import monitor
-from monitor.JsonParser import compress_plot_save
+import time
+
+from monitor import Website
+from monitor.Utils import plot_data, get_seconds, get_past_utc, create_json, create_status_json
 
 # Entry point to run the monitor (and optionally compress data)
 
+
 m = monitor.Monitor()
-# compress_plot_save(m.websites)
 m.run_monitor()
+
+
+
