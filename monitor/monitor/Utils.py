@@ -109,29 +109,13 @@ def get_zip(availability, latency):
     data = {}
     av_copy = availability[:]
     lat_copy = latency[:]
-    av_item = None
-    lat_item = None
-    while len(av_copy) > 0 and len(lat_copy) > 0:
-        if not av_item and len(av_copy) > 0:
-            av_item = av_copy.pop(0)
-        if not lat_item and len(lat_copy) > 0:
-            lat_item = lat_copy.pop(0)
-        if av_item and lat_item:
-            if av_item[0] < lat_item[0]:
-                dic_insert(data, av_item[0], av_item[1], -1)
-                av_item = None
-            else:
-                dic_insert(data, lat_item[0], -1, lat_item[1])
-                lat_item = None
-    while len(av_copy) > 0 or av_item:
-        if not av_item:
-            av_item = av_copy.pop(0)
-        dic_insert(data, av_item[0], av_item[1], -1)
-        av_item = None
-    while len(lat_copy) > 0 or lat_item:
-        if not lat_item:
-            lat_item = lat_copy.pop(0)
-        dic_insert(data, lat_item[0], -1, lat_item[1])
-        lat_item = None
-
+    while len(av_copy) > 0 or len(lat_copy) > 0:
+        av_time = av_copy[0][0] if len(av_copy) > 0 else lat_copy[0][0] + 1
+        lat_time = lat_copy[0][0] if len(lat_copy) > 0 else av_copy[0][0] + 1
+        if av_time < lat_time:
+            item = av_copy.pop(0)
+            dic_insert(data, av_time, item[1], -1)
+        else:
+            item = lat_copy.pop(0)
+            dic_insert(data, lat_time, -1, item[1])
     return data
