@@ -69,7 +69,7 @@ def plot_data(website, suffix=""):
     color = 'tab:orange'
     ax1.set_xlabel('minutes ago)')
     ax1.set_ylabel('availability', color=color)
-    ax1.plot(x_data, y_data, color=color)
+    ax1.plot(x_data, y_data, color=color, marker="o")
     ax1.tick_params(axis='y', labelcolor=color)
 
     ax2 = ax1.twinx()
@@ -77,7 +77,7 @@ def plot_data(website, suffix=""):
     y_data = [data[1] for data in website.latency]
     color = 'tab:blue'
     ax2.set_ylabel('latency', color=color)
-    ax2.plot(x_data, y_data, color=color)
+    ax2.plot(x_data, y_data, color=color, marker="o")
     ax2.tick_params(axis='y', labelcolor=color)
     plt.title(website.name + suffix + " Data Points :" + str(len(website.availability)))
     plt.show()
