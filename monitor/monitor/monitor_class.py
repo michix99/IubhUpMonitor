@@ -2,7 +2,6 @@ import requests
 import time
 import os
 import monitor
-import statistics
 
 
 # Monitor class
@@ -10,6 +9,9 @@ import statistics
 # Upon starts, loads sites.csv (pages we want to monitor)
 # and sanity_checks.csv (pages we use to verify that we are online). Then used load_settings() to run and parse
 # our settings.csv which contains import parameters for the running of the monitor
+from monitor import create_json
+
+
 class Monitor:
     def __init__(self):
         print("Initializing Monitor")
@@ -19,7 +21,7 @@ class Monitor:
         self.websites = self.load_sites(filepath)
         for site in self.websites:
             self.load_existing_data(site)
-        self.config={}
+        self.config = {}
         self.load_settings()
 
     # load settings from disc
@@ -116,27 +118,22 @@ class Monitor:
             website.availability.append((timestamp, up))
             if status_code == "200":
                 website.latency.append((timestamp, latency))
-            monitor.create_json(website)
+            create_json(website)
             print(";", end=" ", flush=True)
         return status_code
 
-    # Prints a big status update with the average
-    # availability of the site over every data point
+    # Prints a big status update on every monitored page, using the status provided by a website
     def print_big_status(self):
-        print("")
-        print("===============================STATUS UPDATE===============================")
+        print("==================================")
+        print("  SITE\t\tSTATUS\t\tLATENCY\t\tAvg.Avl\t\tLastOff")
         for site in self.websites:
-            avail_text = "\tNO DATA"
-            lat_text = "\tNO DATA"
-            if site.latency:
-                avg_lat = int(statistics.mean([data[1] for data in site.latency]))
-                lat_text = str("%.0f" % avg_lat)
-            if site.availability:
-                avg_up = statistics.mean([data[1] for data in site.availability])
-                avail_text = str("%.2f" % avg_up)
+            status = site.get_status()
+            minutes_off = int((int(time.time()) - status['LastOff']) / 60)
+            off_time = f"{minutes_off} min" if status["LastOff"] != -1 else "-"
             print(
-                f"{site.name:10}\t  avg.avail: {avail_text}\tavg.lat: {lat_text:>5}ms (Data: {len(site.availability)})")
-        print("===========================================================================")
+                f"{site.name:>10}\t{status['Online']}"
+                f"\t\t{status['Latency']}ms\t\t{status['Availability']:.2f}\t\t{off_time}")
+        print("==================================")
 
     # Checks all the sites in websites for their availability until manually exited
     # Prints a big status every log_interval checks and small status updates in between
@@ -149,7 +146,7 @@ class Monitor:
             log_timer += 1
             if self.are_we_online():
                 for site in self.websites:
-                    self.check_availability(site, log=True)
+                    self.check_availability(site, log=True, save=True)
                     time.sleep(self.config["small_sleep"])
             else:
                 print("NO INTERNET CONNECTION AVAILABLE", flush=True)
