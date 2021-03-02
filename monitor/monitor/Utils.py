@@ -11,38 +11,23 @@ import os
 # readable should only be True for debugging the json manually
 # The suffix will be appended to the json (for saving compressed files)
 def create_json(website, readable=False, suffix=""):
-    data = {"website": [], "availability": [], "latency": []}
-    data["website"].append({
-        "name": website.name,
-        "url": website.url
-    })
-    filename = website.name + suffix + ".json"
-    filepath = os.path.join(os.path.dirname(__file__), "data", filename)
-    for uptime in website.availability:
-        data["availability"].append({uptime[0]: uptime[1]})
-    for latency in website.latency:
-        data["latency"].append({latency[0]: latency[1]})
-    with open(filepath, "w") as file:
-        if readable:
-            json.dump(data, file, indent=4)
-        else:
-            json.dump(data, file)
-
-
-def create_zip(website):
     zipped = {"website": [], "status": [], "data": []}
     zipped["website"].append({
         "name": website.name,
         "url": website.url
     })
-    filename = website.name + "-zipped" + ".json"
+    filename = website.name + suffix + ".json"
     filepath = os.path.join(os.path.dirname(__file__), "data", filename)
     zipped["data"] = website.get_zip()
     zipped["status"] = website.get_status()
     with open(filepath, "w") as file:
-        json.dump(zipped, file)
+        if readable:
+            json.dump(zipped, file, indent=4)
+        else:
+            json.dump(zipped, file)
 
 
+# Create a small status json of a given website with the core stats
 def create_status_json(website):
     data = {"website": [], "status": []}
     data["website"].append({
@@ -56,7 +41,8 @@ def create_status_json(website):
         json.dump(data, file)
 
 
-def unpack_zip(json_file):
+# read a given zipped json_file and extract the data points in it to return a website object
+def read_json(json_file):
     try:
         zipped = json.load(json_file)
         site = monitor.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
@@ -66,26 +52,6 @@ def unpack_zip(json_file):
             if zipped["data"][utc][1] != "-1":
                 site.latency.append((utc, zipped["data"][utc][1]))
 
-    except json.decoder.JSONDecodeError:
-        print("ERROR: Malformed json file")
-        return
-    except KeyError:
-        print("ERROR: Could not find key in json_file")
-        return
-    return site
-
-
-# read a given json file and return a website object
-def read_json(json_file):
-    try:
-        data = json.load(json_file)
-        site = monitor.Website(data["website"][0]["name"], data["website"][0]["url"])
-        for d in data["availability"]:
-            for key in d:
-                site.availability.append((key, d[key]))
-        for d in data["latency"]:
-            for key in d:
-                site.latency.append((key, d[key]))
     except json.decoder.JSONDecodeError:
         print("ERROR: Malformed json file")
         return
@@ -125,7 +91,7 @@ def get_past_utc(seconds):
     return int(time.time() - seconds)
 
 
-# Availability and Latency will be compiled together as good as possible to save on data
+# Availability and Latency will be compiled together as good as possible to reduce file size
 # If they share a UTC time code, wrap them together
 # Returns it as a dictionary ready for json saving
 def get_zip(availability, latency):
