@@ -17,36 +17,33 @@ class Website:
         self.availability = []
         self.latency = []
 
-    # Returns the averaged data between the start and end moment (in UTC) of a given dataset
+    # Returns the averaged data between the utc_begin and utc_end moment of a given dataset
     # If extract=True will only return data within that timeframe
-    # seconds, minutes, hours, and days regulates how big the timeframe is for a single data point
-    # e.g. if the setting is one hour, the algorithm will take every datapoint within one hour and average it
-    # to a single data point with the time of the _last_ data point in that time frame
+    # time_frame tells the function how many seconds should be compressed to a single datapoint
     @staticmethod
-    def average_data(dataset, extract=False, begin=0, end=0, seconds=0, minutes=0, hours=0, days=0):
-        if end == 0:
-            end = time.time()  # If no end value is given, the current time is set as end value
-        time_frame = seconds + minutes * 60 + hours * 360 + days * 86.400  # How many seconds is each data point?
-        avg_data = []  # Our final result
-        temp_data = []  # This will hold the temporary data of a time_frame before avg. it and adding it to avg_data
-        for data in dataset:
-            timestamp = int(data[0])
-            if timestamp < begin or timestamp > end:  # Check if data is in time we want to average
-                if not extract:  # If extract is true, disregard outside of timeframe
-                    avg_data.append(data)  # If extract is false, append it not averaged
+    def average_data(dataset, extract=False, utc_begin=0, utc_end=0, time_frame=0):
+        if not dataset:
+            return dataset
+        if utc_end == 0:
+            utc_end = time.time()  # If no end value is given, the current time is set as end value
+        final_data = [dataset[0]]
+        time_frame_data = []
+        for data in dataset[1:]:
+            data_utc = int(data[0])
+            if not utc_begin < data_utc < utc_end:  # Check if data is in time we want to average
+                if not extract:
+                    final_data.append(data)  # If extract is false also append data outside our time frame
                 continue
-            if len(avg_data) == 0:  # If our dataset is empty, use this as a first node
-                avg_data.append(data)
-            if len(temp_data) == 0:  # If the data of this timeslot is empty, use this as first node
-                temp_data.append(data)
+            if not time_frame_data:  # If the data of this time_frame is empty, use this as first node
+                time_frame_data.append(data)
                 continue
-            if timestamp > int(temp_data[0][0]) + time_frame:  # Are we over our timeframe
-                avg_data.append((temp_data[-1][0], statistics.mean([i[1] for i in temp_data])))
-                temp_data.clear()
-            temp_data.append(data)
-        if len(temp_data) > 0:
-            avg_data.append((temp_data[-1][0], statistics.mean([i[1] for i in temp_data])))
-        return avg_data
+            if data_utc > int(time_frame_data[0][0]) + time_frame:  # Are we over our time_frame
+                final_data.append((time_frame_data[-1][0], statistics.mean([i[1] for i in time_frame_data])))
+                time_frame_data.clear()
+            time_frame_data.append(data)
+        if time_frame_data:
+            final_data.append((time_frame_data[-1][0], statistics.mean([i[1] for i in time_frame_data])))
+        return final_data
 
     # compresses the availability data of the website without loss of detail, merges successive data points
     # with the same value to a single datapoint with the timestamp of the last datapoint
