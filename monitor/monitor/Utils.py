@@ -7,6 +7,40 @@ import json
 import os
 
 
+# Create the rest.json that will be shared, averages over months, weeks and days
+def create_rest_json(website):
+    from monitor import Website
+    site = Website(website.name, website.url)
+    month_ago = get_past_utc(get_sec(days=30))
+    week_ago = get_past_utc(get_sec(days=7))
+    day_ago = get_past_utc(get_sec(days=1))
+    month_factor_lat = get_sec(days=1)
+    month_factor_avl = get_sec(hours=3)
+    week_factor_lat = get_sec(hours=3)
+    week_factor_avl = get_sec(hours=1)
+    day_factor_lat = get_sec(minutes=15)
+    day_factor_avl = get_sec(minutes=5)
+    avl = site.average_data(website.availability, utc_begin=month_ago, utc_end=week_ago, time_frame=month_factor_avl,
+                            extract=True)
+    avl.extend(site.average_data(website.availability, utc_begin=week_ago, utc_end=day_ago, time_frame=week_factor_avl,
+                                 extract=True))
+    avl.extend(site.average_data(website.availability, utc_begin=day_ago, time_frame=day_factor_avl,
+                                 extract=True))
+    lat = site.average_data(website.latency, utc_begin=month_ago, utc_end=week_ago, time_frame=month_factor_lat,
+                            extract=True)
+    lat.extend(site.average_data(website.latency, utc_begin=week_ago, utc_end=day_ago, time_frame=week_factor_lat,
+                                 extract=True))
+    lat.extend(site.average_data(website.latency, utc_begin=day_ago, time_frame=day_factor_lat,
+                                 extract=True))
+    site.availability = avl
+    site.latency = lat
+    site.compress_data()
+    create_json(site, suffix="-rest")
+    print(avl)
+    print(lat)
+    return site
+
+
 # create a json file from a given website and save it locally
 # readable should only be True for debugging the json manually
 # The suffix will be appended to the json (for saving compressed files)
