@@ -83,7 +83,7 @@ def plot_data(website, suffix=""):
     plt.show()
 
 
-def get_seconds(seconds=0, minutes=0, hours=0, days=0):
+def get_sec(seconds=0, minutes=0, hours=0, days=0):
     return seconds + minutes * 60 + hours * 3600 + days * 3600 * 24
 
 

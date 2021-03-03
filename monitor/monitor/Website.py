@@ -7,7 +7,7 @@ import statistics
 # previous timestamp to this one (in case of raw data it will only be 1 or 0)
 # latency: tuple to store the sites latency data, format: (UTC-Timestamp,latency)
 # latency will be given as a millisecond value
-from monitor.Utils import get_past_utc, get_seconds
+from monitor.Utils import get_past_utc, get_sec
 
 
 class Website:
@@ -77,12 +77,12 @@ class Website:
     # "Availability" = Lifetime average availability
     # "LastOff" = UTC timestamp of the last offline occurrence (-1 if no recorded offline occurrence)
     def get_status(self):
-        time_window = get_past_utc(get_seconds(minutes=15))
+        time_window = get_past_utc(get_sec(minutes=15))
         try:
             online = statistics.mean(
-                d[1] for d in self.average_data(self.availability, begin=time_window, extract=True))
+                d[1] for d in self.average_data(self.availability, utc_begin=time_window, extract=True))
             lat = int(statistics.mean(
-                d[1] for d in self.average_data(self.latency, begin=time_window, extract=True, minutes=1)))
+                d[1] for d in self.average_data(self.latency, utc_begin=time_window, extract=True)))
             availability = statistics.mean(d[1] for d in self.availability)
         except statistics.StatisticsError:
             # We have no Data available right now
@@ -90,7 +90,7 @@ class Website:
             lat = "--"
             availability = 1
         try:
-            last_off = max([int(d[0]) for d in self.average_data(self.availability, minutes=5) if d[1] < 1])
+            last_off = max([int(d[0]) for d in self.average_data(self.availability, time_frame=300) if d[1] < 1])
         except ValueError:
             last_off = -1
         if online == 1:
