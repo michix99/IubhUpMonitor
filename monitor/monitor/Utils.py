@@ -36,8 +36,6 @@ def create_rest_json(website):
     site.latency = lat
     site.compress_data()
     create_json(site, suffix="-rest")
-    print(avl)
-    print(lat)
     return site
 
 
