@@ -10,6 +10,7 @@ import monitor
 # and sanity_checks.csv (pages we use to verify that we are online). Then used load_settings() to run and parse
 # our settings.csv which contains import parameters for the running of the monitor
 from monitor import create_json
+from monitor.Utils import create_rest_json
 
 
 class Monitor:
@@ -32,6 +33,7 @@ class Monitor:
         self.config["log_interval"] = 15  # Use settings.csv to edit, this is just a default
         self.config["small_logs"] = True  # Use settings.csv to edit, this is just a default
         self.config["max_timeout"] = 30  # Use settings.csv to edit, this is just a default
+        self.config["auto_rest_json"] = False  # Use settings.csv to edit, this is just a default
         try:
             with open(filepath) as file:
                 for line in file:
@@ -48,6 +50,8 @@ class Monitor:
                             self.config["small_logs"] = bool(value)
                         if attr == "max_timeout":
                             self.config["max_timeout"] = value
+                        if attr == "auto_rest_json":
+                            self.config["auto_rest_json"] = bool(value)
         except FileNotFoundError:
             print("settings.csv not found, loading default settings")
 
@@ -119,6 +123,8 @@ class Monitor:
             if status_code == "200":
                 website.latency.append((timestamp, latency))
             create_json(website)
+            if self.config["auto_rest_json"]:
+                create_rest_json(website)
             print(";", end=" ", flush=True)
         return status_code
 
