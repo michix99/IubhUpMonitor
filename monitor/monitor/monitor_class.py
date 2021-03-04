@@ -10,7 +10,7 @@ import monitor
 # and sanity_checks.csv (pages we use to verify that we are online). Then used load_settings() to run and parse
 # our settings.csv which contains import parameters for the running of the monitor
 from monitor import create_json
-from monitor.Utils import create_rest_json
+from monitor.Utils import create_rest_json, create_status_json
 
 
 class Monitor:
@@ -125,6 +125,7 @@ class Monitor:
             create_json(website)
             if self.config["auto_rest_json"]:
                 create_rest_json(website)
+                create_status_json(website)
             print(";", end=" ", flush=True)
         return status_code
 
