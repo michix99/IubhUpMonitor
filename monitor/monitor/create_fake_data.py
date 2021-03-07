@@ -1,7 +1,8 @@
-import monitor
+import Website
 import random
 import time
 import matplotlib.pyplot as plt
+from Utils import create_json
 
 
 def create_fake_data(website):
@@ -25,6 +26,6 @@ def plot_data(website):
 
 
 # Create a dummy website, fill it with random data and save it
-myCampus = monitor.Website("myCampus", "https://mycampus.iubh.de/")
+myCampus = Website.Website("myCampus", "https://mycampus.iubh.de/")
 create_fake_data(myCampus)
-monitor.create_json(myCampus)
+create_json(myCampus)

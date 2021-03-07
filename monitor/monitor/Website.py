@@ -7,7 +7,7 @@ import statistics
 # previous timestamp to this one (in case of raw data it will only be 1 or 0)
 # latency: tuple to store the sites latency data, format: (UTC-Timestamp,latency)
 # latency will be given as a millisecond value
-from monitor import Utils
+import Utils
 
 
 class Website:

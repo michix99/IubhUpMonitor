@@ -1,7 +1,8 @@
 import requests
 import time
 import os
-import monitor
+import Website
+from Utils import create_json, create_rest_json, create_status_json, read_json
 
 
 # Monitor class
@@ -9,10 +10,6 @@ import monitor
 # Upon starts, loads sites.csv (pages we want to monitor)
 # and sanity_checks.csv (pages we use to verify that we are online). Then used load_settings() to run and parse
 # our settings.csv which contains import parameters for the running of the monitor
-from monitor import create_json
-from monitor.Utils import create_rest_json, create_status_json
-
-
 class Monitor:
     def __init__(self):
         print("Initializing Monitor")
@@ -65,7 +62,7 @@ class Monitor:
                     if line.startswith("#"):
                         continue
                     try:
-                        w = monitor.Website(line.split(";")[0], line.split(";")[1])
+                        w = Website.Website(line.split(";")[0], line.split(";")[1])
                         site_list.append(w)
                     except IndexError:
                         print("List index out of range: " + line)
@@ -80,7 +77,7 @@ class Monitor:
             filename = website.name + suffix + ".json"
             filepath = os.path.join(os.path.dirname(__file__), "data", filename)
             with open(filepath, "r") as file:
-                site = monitor.read_json(file)
+                site = read_json(file)
                 website.availability = site.availability
                 website.latency = site.latency
                 print("Loaded existing data for " + website.name)

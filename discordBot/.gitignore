@@ -1,0 +1,5 @@
+﻿.idea
+monitor/monitor/__pycache__
+*.json
+monitor/monitor/data.zip
+monitor/monitor/datawithlatency.zip

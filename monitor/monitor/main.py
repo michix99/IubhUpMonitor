@@ -1,4 +1,4 @@
-import monitor
+import monitor_class
 # Entry point to run the monitor
-m = monitor.Monitor()
+m = monitor_class.Monitor()
 m.run_monitor()

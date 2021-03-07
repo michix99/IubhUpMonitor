@@ -1,16 +1,15 @@
 # A class to automate the creation of appropriately structured .json files
 import time
-
+import Website
 import matplotlib.pyplot as plt
-import monitor
 import json
 import os
 
 
 # Create the rest.json that will be shared, averages over months, weeks and days
 def create_rest_json(website):
-    from monitor import Website
-    site = Website(website.name, website.url)
+
+    site = Website.Website(website.name, website.url)
     month_ago = get_past_utc(get_sec(days=30))
     week_ago = get_past_utc(get_sec(days=7))
     day_ago = get_past_utc(get_sec(days=1))
@@ -77,7 +76,7 @@ def create_status_json(website):
 def read_json(json_file):
     try:
         zipped = json.load(json_file)
-        site = monitor.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
+        site = Website.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
         for utc in zipped["data"]:
             if zipped["data"][utc][0] != -1:
                 site.availability.append((int(utc), zipped["data"][utc][0]))
