@@ -1,7 +1,9 @@
 import discord
 from discord.ext import commands
 import sys
-sys.path.append('C:\\Users\\Kimana\\OneDrive - Linde Group\\Studien Projekt\\IubhUpMonitor\\monitor\\monitor')
+import os
+# appends the system path, to import the __init__ module from the monitor libary
+sys.path.append(os.path.join(os.path.split(os.getcwd())[0], 'monitor', 'monitor'))
 from monitor.monitor.__init__ import *
 
 intents = discord.Intents.all()
@@ -12,6 +14,7 @@ client = commands.Bot(command_prefix=commands.when_mentioned_or('!'), intents=in
 @client.event
 async def on_ready():
     print(f'{client.user.name} successfully connect!')
+    print(read_json_status())
 
 
 @client.event
@@ -19,5 +22,6 @@ async def on_member_join(member):
     await member.create_dm()
     await member.dm_channel.send(f"Welcome {member.name} to ...")
 
+
 # runs the TOKEN of the choosen bot
-client.run()
+client.run('ODEwOTIxOTY0MTAwMjU1NzY0.YCqr7g.tGKPsONMJ5Yqj_PdiG0mgaWHyq0')

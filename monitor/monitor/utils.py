@@ -1,6 +1,6 @@
 # A class to automate the creation of appropriately structured .json files
 import time
-import Website
+import website_class
 import matplotlib.pyplot as plt
 import json
 import os
@@ -9,7 +9,7 @@ import os
 # Create the rest.json that will be shared, averages over months, weeks and days
 def create_rest_json(website):
 
-    site = Website.Website(website.name, website.url)
+    site = website_class.Website(website.name, website.url)
     month_ago = get_past_utc(get_sec(days=30))
     week_ago = get_past_utc(get_sec(days=7))
     day_ago = get_past_utc(get_sec(days=1))
@@ -41,7 +41,7 @@ def create_rest_json(website):
 # create a json file from a given website and save it locally
 # readable should only be True for debugging the json manually
 # The suffix will be appended to the json (for saving compressed files)
-def create_json(website, readable=False, suffix=""):
+def create_json(website, readable=True, suffix=""):
     zipped = {"website": [], "status": [], "data": []}
     zipped["website"].append({
         "name": website.name,
@@ -73,10 +73,10 @@ def create_status_json(website):
 
 
 # read a given zipped json_file and extract the data points in it to return a website object
-def read_json(json_file):
+def read_json_data(json_file):
     try:
         zipped = json.load(json_file)
-        site = Website.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
+        site = website_class.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
         for utc in zipped["data"]:
             if zipped["data"][utc][0] != -1:
                 site.availability.append((int(utc), zipped["data"][utc][0]))
@@ -90,6 +90,27 @@ def read_json(json_file):
         print("ERROR: Could not find key in json_file")
         return
     return site
+
+
+# loops trough the data folder to catch the .json files which contains "status" in there names, if it founds one, it
+# reads the file and puts the websitename, onlinestatus and latency in an dictonary and returns the dictonary at the end
+def read_json_status():
+    utils_path = os.path.dirname(os.path.realpath(__file__))  # path of this file
+    json_path = os.path.join(utils_path, 'data')  # path of the json files
+    all_json_files = os.listdir(json_path)  # all json files in the directory
+    status_dict = dict()
+    # loops through all json files in the data folder
+    for filename in all_json_files:
+        # if the file contains the word "status" -> catch it
+        if "status" in filename:
+            # reads the status file and puts the websitename, the online status and the latency in a dictonary
+            with open(os.path.join(json_path, filename), "r") as file:
+                content = json.load(file)
+                website_name = content['website'][0]['name']
+                online_status = content['status']['Online']
+                latency_status = content['status']['Latency']
+                status_dict.update({website_name: [online_status, latency_status]})
+    return status_dict
 
 
 # Used for debugging to verify we compress and average our data correctly
