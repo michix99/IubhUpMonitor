@@ -14,7 +14,8 @@ client = commands.Bot(command_prefix=commands.when_mentioned_or('!'), intents=in
 @client.event
 async def on_ready():
     print(f'{client.user.name} successfully connect!')
-    print(read_json_status())
+    status = read_json_status()
+    print(status.get(1)[0])
 
 
 @client.event
@@ -24,4 +25,4 @@ async def on_member_join(member):
 
 
 # runs the TOKEN of the choosen bot
-client.run('ODEwOTIxOTY0MTAwMjU1NzY0.YCqr7g.tGKPsONMJ5Yqj_PdiG0mgaWHyq0')
+client.run()
