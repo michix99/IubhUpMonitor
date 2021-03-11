@@ -7,7 +7,7 @@ import statistics
 # previous timestamp to this one (in case of raw data it will only be 1 or 0)
 # latency: tuple to store the sites latency data, format: (UTC-Timestamp,latency)
 # latency will be given as a millisecond value
-from monitor import Utils
+import utils
 
 
 class Website:
@@ -80,7 +80,7 @@ class Website:
     # "Availability" = Lifetime average availability
     # "LastOff" = UTC timestamp of the last offline occurrence (-1 if no recorded offline occurrence)
     def get_status(self):
-        time_window = Utils.get_past_utc(Utils.get_sec(minutes=15))
+        time_window = utils.get_past_utc(utils.get_sec(minutes=15))
         try:
             online = statistics.mean(
                 d[1] for d in self.average_data(self.availability, utc_begin=time_window, extract=True))
