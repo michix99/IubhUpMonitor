@@ -1,37 +1,80 @@
-import os
-
-from flask import Flask
-from flask_restful import Resource, Api, reqparse
-import pandas as pd
-import ast
-import monitor_class
+from flask import Flask, abort
 import json
-import threading
-import time
-
-
-class Data(Resource):
-    def __init__(self, website):
-        self.website = website
-
-    def get(self):
-        try:
-            filename = self.website.name + "-rest.json"
-            filepath = os.path.join(os.path.dirname(__file__), "data", filename)
-            with open(filepath, "r") as file:
-                data = json.load(file)
-                return data
-        except FileNotFoundError:
-            print("Server could not open data for " + self.website.name)
-
-    def __name__(self):
-        return self.website.name
 
 
 app = Flask(__name__)
-api = Api(app)
-m = monitor_class.Monitor()
-api.add_resource(Data, "/data")
+
+
+@app.route("/BrainYoo/data")
+def brainyoo_data():
+    try:
+        with open("data/BrainYoo-rest.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/BrainYoo/status")
+def brainyoo_status():
+    try:
+        with open("data/BrainYoo-status.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/myCampus/data")
+def mycampus_data():
+    try:
+        with open("data/myCampus-rest.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/myCampus/status")
+def mycampus_status():
+    try:
+        with open("data/myCampus-status.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/Care-FS/data")
+def carefs_data():
+    try:
+        with open("data/Care-FS-rest.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/Care-FS/status")
+def carefs_status():
+    try:
+        with open("data/Care-FS-status.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/webreader/data")
+def webreader_data():
+    try:
+        with open("data/webreader-rest.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route("/webreader/status")
+def webreader_status():
+    try:
+        with open("data/webreader-status.json", "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        abort(404)
+
 
 app.run()
-m.run_monitor()
