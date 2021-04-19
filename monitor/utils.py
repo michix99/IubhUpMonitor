@@ -4,6 +4,7 @@ import website_class
 import matplotlib.pyplot as plt
 import json
 import os
+from website_class import Website
 
 
 # Create the rest.json that will be shared, averages over months, weeks and days
@@ -43,10 +44,10 @@ def create_rest_json(website):
 # The suffix will be appended to the json (for saving compressed files)
 def create_json(website, readable=True, suffix=""):
     zipped = {"website": [], "status": [], "data": []}
-    zipped["website"].append({
+    zipped["website"] = {
         "name": website.name,
         "url": website.url
-    })
+    }
     filename = website.name + suffix + ".json"
     filepath = os.path.join(os.path.dirname(__file__), "data", filename)
     zipped["data"] = get_zip(website.availability, website.latency)
@@ -61,10 +62,10 @@ def create_json(website, readable=True, suffix=""):
 # Create a small status json of a given website with the core stats
 def create_status_json(website):
     data = {"website": [], "status": []}
-    data["website"].append({
+    data["website"] = {
         "name": website.name,
         "url": website.url
-    })
+    }
     filename = website.name + "-status" + ".json"
     filepath = os.path.join(os.path.dirname(__file__), "data", filename)
     data["status"] = website.get_status()
@@ -76,12 +77,12 @@ def create_status_json(website):
 def read_json_data(json_file):
     try:
         zipped = json.load(json_file)
-        site = website_class.Website(zipped["website"][0]["name"], zipped["website"][0]["url"])
+        site = website_class.Website(zipped["website"]["name"], zipped["website"]["url"])
         for utc in zipped["data"]:
-            if zipped["data"][utc][0] != -1:
-                site.availability.append((int(utc), zipped["data"][utc][0]))
-            if zipped["data"][utc][1] != -1:
-                site.latency.append((int(utc), zipped["data"][utc][1]))
+            if zipped["data"][utc]["availability"] != -1:
+                site.availability.append((int(utc), zipped["data"][utc]["availability"]))
+            if zipped["data"][utc]["latency"] != -1:
+                site.latency.append((int(utc), zipped["data"][utc]["latency"]))
 
     except json.decoder.JSONDecodeError:
         print("ERROR: Malformed json file")
@@ -106,7 +107,7 @@ def read_json_status():
             # reads the status file and puts the websitename, the online status and the latency in a dictonary
             with open(os.path.join(json_path, filename), "r") as file:
                 content = json.load(file)
-                website_name = content['website'][0]['name']
+                website_name = content['website']['name']
                 online_status = content['status']['Online']
                 latency_status = content['status']['Latency']
                 status_dict.update({website_name: [online_status, latency_status]})
@@ -146,12 +147,21 @@ def get_past_utc(seconds):
 # Helper function to zip data in dictionaries
 def dic_insert(dic, utc, av, lat):
     if utc in dic:
-        if dic[utc][0] == -1:
-            dic[utc] = (av, dic[utc][1])
-        if dic[utc][1] == -1:
-            dic[utc] = (dic[utc][0], lat)
+        if dic[utc]["availability"] == -1:
+            dic[utc] = {
+                "availability": av,
+                "latency": dic[utc]["latency"]
+            }
+        if dic[utc]["latency"] == -1:
+            dic[utc] = {
+                "availability": dic[utc]["availability"],
+                "latency": lat
+            }
     else:
-        dic[utc] = (av, lat)
+        dic[utc] = {
+            "availability": av,
+            "latency": lat
+        }
 
 
 # Availability and Latency will be compiled together as good as possible to reduce file size
@@ -171,3 +181,20 @@ def get_zip(availability, latency):
             item = lat_copy.pop(0)
             dic_insert(data, lat_time, -1, item[1])
     return data
+
+# Reads the local file at "path" and creates a list of website objects out of it
+def load_sites(path):
+    site_list = []
+    try:
+        with open(path) as file:
+            for line in file:
+                if line.startswith("#"):
+                    continue
+                try:
+                    w = Website(line.split(";")[0], line.split(";")[1])
+                    site_list.append(w)
+                except IndexError:
+                    print("List index out of range: " + line)
+    except FileNotFoundError:
+        print("File not found: " + path)
+    return site_list

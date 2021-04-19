@@ -17,8 +17,10 @@ def brainyoo_data():
 @app.route("/BrainYoo/status")
 def brainyoo_status():
     try:
-        with open("data/BrainYoo-status.json", "r") as file:
-            return json.load(file)
+        with open("data/BrainYoo-rest.json", "r") as file:
+            data = json.load(file)
+            del data["data"]
+            return data
     except FileNotFoundError:
         abort(404)
 
@@ -35,8 +37,10 @@ def mycampus_data():
 @app.route("/myCampus/status")
 def mycampus_status():
     try:
-        with open("data/myCampus-status.json", "r") as file:
-            return json.load(file)
+        with open("data/myCampus-rest.json", "r") as file:
+            data = json.load(file)
+            del data["data"]
+            return data
     except FileNotFoundError:
         abort(404)
 
@@ -53,8 +57,10 @@ def carefs_data():
 @app.route("/Care-FS/status")
 def carefs_status():
     try:
-        with open("data/Care-FS-status.json", "r") as file:
-            return json.load(file)
+        with open("data/Care-FS-rest.json", "r") as file:
+            data = json.load(file)
+            del data["data"]
+            return data
     except FileNotFoundError:
         abort(404)
 
@@ -71,8 +77,10 @@ def webreader_data():
 @app.route("/webreader/status")
 def webreader_status():
     try:
-        with open("data/webreader-status.json", "r") as file:
-            return json.load(file)
+        with open("data/webreader-rest.json", "r") as file:
+            data = json.load(file)
+            del data["data"]
+            return data
     except FileNotFoundError:
         abort(404)
 
