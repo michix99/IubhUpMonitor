@@ -1,8 +1,7 @@
 import requests
 import time
 import os
-import Website
-from Utils import create_json, create_rest_json, create_status_json, read_json
+from utils import create_json, create_rest_json, create_status_json, read_json_data, load_sites
 
 
 # Monitor class
@@ -14,13 +13,15 @@ class Monitor:
     def __init__(self):
         print("Initializing Monitor")
         filepath = os.path.join(os.path.dirname(__file__), "config", "sanity_checks.csv")
-        self.online_checks = self.load_sites(filepath)
+        self.online_checks = load_sites(filepath)
         filepath = os.path.join(os.path.dirname(__file__), "config", "sites.csv")
-        self.websites = self.load_sites(filepath)
+        self.websites = load_sites(filepath)
         for site in self.websites:
             self.load_existing_data(site)
         self.config = {}
         self.load_settings()
+        if not os.path.exists("data"):
+            os.makedirs("data")
 
     # load settings from disc
     def load_settings(self):
@@ -52,24 +53,6 @@ class Monitor:
         except FileNotFoundError:
             print("settings.csv not found, loading default settings")
 
-    # Reads the local file at "path" and creates a list of website objects out of it
-    @staticmethod
-    def load_sites(path):
-        site_list = []
-        try:
-            with open(path) as file:
-                for line in file:
-                    if line.startswith("#"):
-                        continue
-                    try:
-                        w = Website.Website(line.split(";")[0], line.split(";")[1])
-                        site_list.append(w)
-                    except IndexError:
-                        print("List index out of range: " + line)
-        except FileNotFoundError:
-            print("File not found: " + path)
-        return site_list
-
     # Check if we already have data on a website and if so append it to our new website object
     @staticmethod
     def load_existing_data(website, suffix=""):
@@ -77,7 +60,7 @@ class Monitor:
             filename = website.name + suffix + ".json"
             filepath = os.path.join(os.path.dirname(__file__), "data", filename)
             with open(filepath, "r") as file:
-                site = read_json(file)
+                site = read_json_data(file)
                 website.availability = site.availability
                 website.latency = site.latency
                 print("Loaded existing data for " + website.name)
@@ -122,7 +105,6 @@ class Monitor:
             create_json(website)
             if self.config["auto_rest_json"]:
                 create_rest_json(website)
-                create_status_json(website)
             print(";", end=" ", flush=True)
         return status_code
 
