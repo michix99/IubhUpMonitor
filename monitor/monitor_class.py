@@ -1,7 +1,7 @@
 import requests
 import time
 import os
-from utils import create_json, create_rest_json, create_status_json, read_json_data, load_sites
+from utils import create_json, create_rest_json, read_json_data, load_sites
 
 
 # Monitor class
@@ -114,6 +114,7 @@ class Monitor:
         print("  SITE\t\tSTATUS\t\tLATENCY\t\tAvg.Avl\t\tLastOff")
         for site in self.websites:
             status = site.get_status()
+            print(f"status: {status}")
             minutes_off = int((int(time.time()) - status['LastOff']) / 60)
             off_time = f"{minutes_off} min" if status["LastOff"] != -1 else "-"
             print(

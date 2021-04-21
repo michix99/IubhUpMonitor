@@ -1,13 +1,12 @@
 import time
 import statistics
-
+import utils
 # A class to store all available runtime data on a website
 # availability: tuple to store our main data, format: (UTC-Timestamp,availability)
 # availability will be a number between 0 and 1 and the timestamp is the average availability from the
 # previous timestamp to this one (in case of raw data it will only be 1 or 0)
 # latency: tuple to store the sites latency data, format: (UTC-Timestamp,latency)
 # latency will be given as a millisecond value
-import utils
 
 
 class Website:

@@ -4,7 +4,6 @@ import website_class
 import matplotlib.pyplot as plt
 import json
 import os
-from website_class import Website
 
 
 # Create the rest.json that will be shared, averages over months, weeks and days
@@ -93,25 +92,40 @@ def read_json_data(json_file):
     return site
 
 
-# loops trough the data folder to catch the .json files which contains "status" in there names, if it founds one, it
+# ===============================================FOR THE BOT(START)=====================================================
+# loops trough the data folder to catch the .json files which NOT contains "rest" in there names, if it founds one, it
 # reads the file and puts the websitename, onlinestatus and latency in an dictonary and returns the dictonary at the end
-def read_json_status():
+def read_json_data_bot():
+    i = 0
     utils_path = os.path.dirname(os.path.realpath(__file__))  # path of this file
     json_path = os.path.join(utils_path, 'data')  # path of the json files
     all_json_files = os.listdir(json_path)  # all json files in the directory
     status_dict = dict()
     # loops through all json files in the data folder
     for filename in all_json_files:
-        # if the file contains the word "status" -> catch it
-        if "status" in filename:
+        # if the file NOT contains the word "rest" -> catch it
+        if "rest" not in filename:
             # reads the status file and puts the websitename, the online status and the latency in a dictonary
             with open(os.path.join(json_path, filename), "r") as file:
                 content = json.load(file)
                 website_name = content['website']['name']
                 online_status = content['status']['Online']
                 latency_status = content['status']['Latency']
-                status_dict.update({website_name: [online_status, latency_status]})
+                last_offline = content['status']['LastOff']
+                status_dict.update({i: [website_name, online_status, latency_status, last_offline]})
+                i += 1
     return status_dict
+
+
+# returns colorful circles to visualize GREEN, RED and YELLOW for the bot
+def online_offline_unstable(status):
+    if status == "GREEN":
+        return "🟢"
+    elif status == "RED":
+        return "🔴"
+    elif status == "YELLOW":
+        return "🟡"
+# ==================================================FOR THE BOT(END)====================================================
 
 
 # Used for debugging to verify we compress and average our data correctly
@@ -182,6 +196,7 @@ def get_zip(availability, latency):
             dic_insert(data, lat_time, -1, item[1])
     return data
 
+
 # Reads the local file at "path" and creates a list of website objects out of it
 def load_sites(path):
     site_list = []
@@ -191,7 +206,7 @@ def load_sites(path):
                 if line.startswith("#"):
                     continue
                 try:
-                    w = Website(line.split(";")[0], line.split(";")[1])
+                    w = website_class.Website(line.split(";")[0], line.split(";")[1])
                     site_list.append(w)
                 except IndexError:
                     print("List index out of range: " + line)
