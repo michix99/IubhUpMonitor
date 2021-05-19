@@ -45,23 +45,23 @@ async def on_member_join(member):
 async def help(ctx):
     embed = discord.Embed(colour=discord.Colour.dark_red())
     embed.set_author(name="Help")
-    embed.add_field(name="Commands:", value="!iu_websites_status -> shows the availability of the most used websites as an IU-student")
+    embed.add_field(name="Commands:", value="!status -> shows the availability of the most used websites as an IU-student")
     await ctx.author.send(embed=embed)
 
 
 # uses the read_json_status() method to get all the needed informations from the monitor and shows them in the chat
 @client.command()
-async def iu_websites_status(ctx):
+async def status(ctx):
     answer_string = ""
-    status = read_json_data_bot()  # returns all necessary data for the user as a dictonary (function can be found in utils.py)
+    status1 = read_json_data_bot()  # returns all necessary data for the user as a dictonary (function can be found in utils.py)
     # creates an understandable message for the user with the informations from the dictonary
-    for i in range(len(status)):
-        if status.get(i)[3] == -1:
+    for i in range(len(status1)):
+        if status1.get(i)[3] == -1:
             last_off_time = "-"  # will be writen to the user if no "last offline time" is known
         else:
-            last_off_time = status.get(i)[3]  # executes if a last offline time is known
-        answer_string += f"**{status.get(i)[0]}**: \n" \
-                         f"\tStatus: {online_offline_unstable(status.get(i)[1])} | Latency: {status.get(i)[2]}ms | " \
+            last_off_time = status1.get(i)[3]  # executes if a last offline time is known
+        answer_string += f"**{status1.get(i)[0]}**: \n" \
+                         f"\tStatus: {online_offline_unstable(status1.get(i)[1])} | Latency: {status1.get(i)[2]}ms | " \
                          f"Last Offline-Time: {last_off_time}\n"
         i += 1
     # embeds the message for the user in a cooler look then a normal message
@@ -70,6 +70,21 @@ async def iu_websites_status(ctx):
     embed.add_field(name=f"Online: {online_offline_unstable('GREEN')} Offline: {online_offline_unstable('RED')} Unstable: "
                          f"{online_offline_unstable('YELLOW')}\n\n", value=answer_string)  # textfield with the inforamtion
     await ctx.author.send(embed=embed)
+
+
+# currently stucked because of missing permission and i can't figure out what this missing permission is....
+@client.command()
+async def informatik(ctx):
+    for i in range(len(ctx.author.guild.roles)):
+        if ctx.author.guild.roles[i].name == "Informatiker":
+            print(ctx.author.guild.roles[i])
+    for role in range(len(ctx.author.roles)):
+        if ctx.author.roles[role].name == "Informatiker":
+            print("there is nothing to do")
+            break
+        elif role == len(ctx.author.roles) - 1:
+            await ctx.author.add_roles(ctx.author.guild.roles[i])
+            print("role will be set")
 
 
 # runs the TOKEN of the choosen bot
