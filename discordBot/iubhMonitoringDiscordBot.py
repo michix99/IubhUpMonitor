@@ -85,7 +85,7 @@ def get_role_number(role, roles):
 # makes sure if a user already has a specified role
 def is_user_role(user, new_role):
     for role in range(len(user.roles)):
-        if user.roles[role].name == new_role:
+        if user.roles[role].name == new_role or len(user.roles) >= 2:
             return True
     return False
 
@@ -93,11 +93,11 @@ def is_user_role(user, new_role):
 # use ctx.author and desired role name to set the users role
 async def set_user_role(user, role):
     if is_user_role(user, role):
-        print("User " + str(user) + " already has that role!")
+        print(f"{user} already has a role!")
         return
     role_number = get_role_number(role, user.guild.roles)
     if role_number != -1:
-        print("Setting " + str(user) + " to role: " + role)
+        print(f"Setting {user} to role {role}")
         await user.add_roles(user.guild.roles[role_number])
     else:
         print("Role not found: " + role)
@@ -106,7 +106,37 @@ async def set_user_role(user, role):
 # sets users role to informatik
 @client.command()
 async def informatik(ctx):
-    await set_user_role(ctx.author, "Informatiker")
+    await set_user_role(ctx.author, "Informatik")
+
+
+# sets users role to wirtschaftsinformatik
+@client.command()
+async def wirtschaftsinformatik(ctx):
+    await set_user_role(ctx.author, "Wirtschaftsinformatik")
+
+
+# sets users role to medieninformatik
+@client.command()
+async def medieninformatik(ctx):
+    await set_user_role(ctx.author, "Medieninformatik")
+
+
+# sets users role to computer science
+@client.command()
+async def computer_science(ctx):
+    await set_user_role(ctx.author, "Computer Science")
+
+
+# sets users role to cyber security
+@client.command()
+async def cyber_security(ctx):
+    await set_user_role(ctx.author, "Cyber Security")
+
+
+# sets users role to robotics
+@client.command()
+async def robotics(ctx):
+    await set_user_role(ctx.author, "Robotics")
 
 
 # runs the TOKEN of the chosen bot
