@@ -95,7 +95,7 @@ async def set_user_role(user, role):
     if is_user_role(user, role):
         print("User " + str(user) + " already has that role!")
         return
-    role_number = get_role_number("Informatiker", user.guild.roles)
+    role_number = get_role_number(role, user.guild.roles)
     if role_number != -1:
         print("Setting " + str(user) + " to role: " + role)
         await user.add_roles(user.guild.roles[role_number])
