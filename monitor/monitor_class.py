@@ -114,7 +114,6 @@ class Monitor:
         print("  SITE\t\tSTATUS\t\tLATENCY\t\tAvg.Avl\t\tLastOff")
         for site in self.websites:
             status = site.get_status()
-            print(f"status: {status}")
             minutes_off = int((int(time.time()) - status['LastOff']) / 60)
             off_time = f"{minutes_off} min" if status["LastOff"] != -1 else "-"
             print(
