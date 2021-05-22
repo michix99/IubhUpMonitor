@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import sys
 import os
+
 # appends the system path, to import the __init__ module from the monitor library
 sys.path.append(os.path.join(os.path.split(os.getcwd())[0], 'monitor'))
 from monitor.__init__ import *
@@ -10,20 +11,23 @@ intents = discord.Intents.all()
 client = commands.Bot(command_prefix=commands.when_mentioned_or('!'), intents=intents)
 client.remove_command("help")
 
+
 # executes when bot connects successfully to the server
 @client.event
 async def on_ready():
     print(f'{client.user.name} successfully connect!\n')
     print("Connected to the following Guild/s:")
     for i in range(len(client.guilds)):
-        print(str(client.guilds[i]) + "\n")
+        print(str(client.guilds[i]))
         i += 1
+    print("\nReady to receive commands\n")
+
 
 # welcome message everytime a new member joins the server
 @client.event
 async def on_member_join(member):
     await member.create_dm()
-    await member.dm_channel.send(f"Welcome {member.name} to the unofficial IU server for IT courses. \n" 
+    await member.dm_channel.send(f"Welcome {member.name} to the unofficial IU server for IT courses. \n"
                                  f"Please introduce yourself at the channel '#vorstellungsrunde'"
                                  f"You can use this bot to select a role to show everyone what you are studying.\n\n"
                                  f"To set your role please type the correct command in our chat.\n"
@@ -70,19 +74,39 @@ async def status(ctx):
     await ctx.author.send(embed=embed)
 
 
-# currently broken because of missing permission and i can't figure out what this missing permission is....
+# finds index of role
+def get_role_number(role, roles):
+    for i in range(len(roles)):
+        if roles[i].name == role:
+            return i
+    return -1
+
+
+# makes sure if a user already has a specified role
+def is_user_role(user, new_role):
+    for role in range(len(user.roles)):
+        if user.roles[role].name == new_role:
+            return True
+    return False
+
+
+# use ctx.author and desired role name to set the users role
+async def set_user_role(user, role):
+    if is_user_role(user, role):
+        print("User " + str(user) + " already has that role!")
+        return
+    role_number = get_role_number("Informatiker", user.guild.roles)
+    if role_number != -1:
+        print("Setting " + str(user) + " to role: " + role)
+        await user.add_roles(user.guild.roles[role_number])
+    else:
+        print("Role not found: " + role)
+
+
+# sets users role to informatik
 @client.command()
 async def informatik(ctx):
-    for i in range(len(ctx.author.guild.roles)):
-        if ctx.author.guild.roles[i].name == "Informatiker":
-            print(ctx.author.guild.roles[i])
-    for role in range(len(ctx.author.roles)):
-        if ctx.author.roles[role].name == "Informatiker":
-            print("there is nothing to do")
-            break
-        elif role == len(ctx.author.roles) - 1:
-            await ctx.author.add_roles(ctx.author.guild.roles[i])
-            print("role will be set")
+    await set_user_role(ctx.author, "Informatiker")
 
 
 # runs the TOKEN of the chosen bot
