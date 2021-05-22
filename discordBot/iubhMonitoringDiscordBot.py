@@ -3,8 +3,8 @@ from discord.ext import commands
 import sys
 import os
 # appends the system path, to import the __init__ module from the monitor library
-from monitor.__init__ import *
 sys.path.append(os.path.join(os.path.split(os.getcwd())[0], 'monitor'))
+from monitor.__init__ import *
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix=commands.when_mentioned_or('!'), intents=intents)
