@@ -45,7 +45,14 @@ async def on_member_join(member):
 async def help(ctx):
     embed = discord.Embed(colour=discord.Colour.dark_red())
     embed.set_author(name="Help")
-    embed.add_field(name="Commands:", value="!status -> shows the availability of IU websites")
+    embed.add_field(name="Commands:", value="""!status -> shows the availability of IU websites \n
+    !informatik -> sets your role to 'Informatik' \n
+    !wirtschaftsinformatik -> sets your role to 'Wirtschaftsinformatik' \n
+    !robotics -> sets your role to 'Robotics' \n
+    !medieninformatik -> sets your role to 'Medieninformatik' \n
+    !computer_science -> sets your role to 'Computer Science' \n
+    
+    """)
     await ctx.author.send(embed=embed)
 
 
@@ -103,6 +110,30 @@ async def set_user_role(user, role):
         print("Role not found: " + role)
 
 
+@client.command()
+async def set_course(ctx):
+    ctx.author.send("give me a role")
+    await ctx.message.on_reaction_add("hello")
+
+
+@client.command()
+async def course(ctx, course):
+    if course == "informatik":
+        await set_user_role(ctx.author, "Informatiker")
+    elif course == "wirtschaftsinformatik":
+        await set_user_role(ctx.author, "Wirtschaftsinformatik")
+    elif course == "medieninformatik":
+        await set_user_role(ctx.author, "Medieninformatik")
+    elif course == "robotics":
+        await set_user_role(ctx.author, "Robotics")
+    elif course == "computer_science":
+        await set_user_role(ctx.author, "Computer Science")
+    elif course == "cyber_security":
+        await set_user_role(ctx.author, "Cyber Security")
+    elif course == "mit_IT_bezug":
+        await set_user_role(ctx.author, "Mit IT Bezug")
+
+
 # sets users role to informatik
 @client.command()
 async def informatik(ctx):
@@ -137,6 +168,11 @@ async def cyber_security(ctx):
 @client.command()
 async def robotics(ctx):
     await set_user_role(ctx.author, "Robotics")
+
+
+@client.command(aliases=["mITb"])
+async def mitb(ctx):
+    await set_user_role(ctx.author, "Mit IT Bezug")
 
 
 # runs the TOKEN of the chosen bot
