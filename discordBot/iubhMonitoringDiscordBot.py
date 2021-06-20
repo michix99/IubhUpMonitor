@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import sys
 import os
+from discord_buttons_plugin import *
 
 # appends the system path, to import the __init__ module from the monitor library
 sys.path.append(os.path.join(os.path.split(os.getcwd())[0], 'monitor'))
@@ -9,6 +10,7 @@ from monitor.__init__ import *
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix=commands.when_mentioned_or('!'), intents=intents)
+buttons = ButtonsClient(client)
 client.remove_command("help")
 
 
@@ -46,14 +48,116 @@ async def help(ctx):
     embed = discord.Embed(colour=discord.Colour.dark_red())
     embed.set_author(name="Help")
     embed.add_field(name="Commands:", value="""!status -> shows the availability of IU websites \n
-    !informatik -> sets your role to 'Informatik' \n
-    !wirtschaftsinformatik -> sets your role to 'Wirtschaftsinformatik' \n
-    !robotics -> sets your role to 'Robotics' \n
-    !medieninformatik -> sets your role to 'Medieninformatik' \n
-    !computer_science -> sets your role to 'Computer Science' \n
-    
+    !set_role -> click one of the buttons to choose what's your study
     """)
     await ctx.author.send(embed=embed)
+
+
+# use the discord-button-plugin to show a list of buttons wish are clickable to choose ONE server role
+@client.command()
+async def set_role(ctx):
+    await buttons.send(
+        content="Choose your role!",
+        channel=ctx.channel.id,
+        components=[
+            ActionRow([
+                Button(
+                    label="Informatik",
+                    style=ButtonType().Primary,
+                    custom_id="informatik"
+                ),
+                Button(
+                    label="Wirtschaftsinformatik",
+                    style=ButtonType().Primary,
+                    custom_id="wirtschaftsinformatik"
+                ),
+                Button(
+                    label="Medieninformatik",
+                    style=ButtonType().Primary,
+                    custom_id="medieninformatik"
+                ),
+                Button(
+                    label="Robotics",
+                    style=ButtonType().Primary,
+                    custom_id="robotics"
+                ),
+                Button(
+                    label="Computer Science",
+                    style=ButtonType().Primary,
+                    custom_id="computer_science"
+                )
+            ]),
+            ActionRow([
+                Button(
+                    label="Cyber Security",
+                    style=ButtonType().Primary,
+                    custom_id="cyber_security"
+                ),
+                Button(
+                    label="Mit IT Bezug",
+                    style=ButtonType().Primary,
+                    custom_id="mit_it_bezug"
+                )
+            ])
+        ]
+    )
+
+
+# all necessary commands for the button-bar to excute the right function by clicking on a button
+@buttons.click
+async def informatik(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Informatiker")
+
+
+@buttons.click
+async def wirtschaftsinformatik(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Wirtschaftsinformatiker")
+
+
+@buttons.click
+async def medieninformatik(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Medieninformatiker")
+
+
+@buttons.click
+async def robotics(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Robotics")
+
+
+@buttons.click
+async def computer_science(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Computer Science")
+
+
+@buttons.click
+async def cyber_security(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Cyber Security")
+
+
+@buttons.click
+async def mit_it_bezug(ctx):
+    for member in client.guilds[0].members:
+        if member.name == ctx.member.name:
+            await ctx.reply(f"Hello, {member}!")
+            await set_user_role(member, "Mit IT Bezug")
 
 
 # uses the read_json_status() method to get all the availability information from the monitor and shows them in the chat
@@ -100,80 +204,14 @@ def is_user_role(user, new_role):
 # use ctx.author and desired role name to set the users role
 async def set_user_role(user, role):
     if is_user_role(user, role):
-        print(f"{user} already has a role!")
+        await user.send(f"You already have a role! If you have any problems by setting your role or you wanna change it, please contact an admin.")
         return
     role_number = get_role_number(role, user.guild.roles)
     if role_number != -1:
-        print(f"Setting {user} to role {role}")
         await user.add_roles(user.guild.roles[role_number])
+        await user.send(f"Your role has been set to role {role}.")
     else:
         print("Role not found: " + role)
-
-
-@client.command()
-async def set_course(ctx):
-    ctx.author.send("give me a role")
-    await ctx.message.on_reaction_add("hello")
-
-
-@client.command()
-async def course(ctx, course):
-    if course == "informatik":
-        await set_user_role(ctx.author, "Informatiker")
-    elif course == "wirtschaftsinformatik":
-        await set_user_role(ctx.author, "Wirtschaftsinformatik")
-    elif course == "medieninformatik":
-        await set_user_role(ctx.author, "Medieninformatik")
-    elif course == "robotics":
-        await set_user_role(ctx.author, "Robotics")
-    elif course == "computer_science":
-        await set_user_role(ctx.author, "Computer Science")
-    elif course == "cyber_security":
-        await set_user_role(ctx.author, "Cyber Security")
-    elif course == "mit_IT_bezug":
-        await set_user_role(ctx.author, "Mit IT Bezug")
-
-
-# sets users role to informatik
-@client.command()
-async def informatik(ctx):
-    await set_user_role(ctx.author, "Informatik")
-
-
-# sets users role to wirtschaftsinformatik
-@client.command()
-async def wirtschaftsinformatik(ctx):
-    await set_user_role(ctx.author, "Wirtschaftsinformatik")
-
-
-# sets users role to medieninformatik
-@client.command()
-async def medieninformatik(ctx):
-    await set_user_role(ctx.author, "Medieninformatik")
-
-
-# sets users role to computer science
-@client.command()
-async def computer_science(ctx):
-    await set_user_role(ctx.author, "Computer Science")
-
-
-# sets users role to cyber security
-@client.command()
-async def cyber_security(ctx):
-    await set_user_role(ctx.author, "Cyber Security")
-
-
-# sets users role to robotics
-@client.command()
-async def robotics(ctx):
-    await set_user_role(ctx.author, "Robotics")
-
-
-@client.command(aliases=["mITb"])
-async def mitb(ctx):
-    await set_user_role(ctx.author, "Mit IT Bezug")
-
 
 # runs the TOKEN of the chosen bot
 client.run('ODEwOTIxOTY0MTAwMjU1NzY0.YCqr7g.tGKPsONMJ5Yqj_PdiG0mgaWHyq0')
